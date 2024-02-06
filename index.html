@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desafio-5 Todo List</title>
+</head>
+<style>
+    body {
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    }
+
+    .containerPrincipal {
+        margin: 8% auto;
+        padding: 0 1rem;
+        padding-right: 3%;
+        max-height: fit-content;
+        max-width: 750px;
+        min-width: 320px;
+        border: 2px solid black;
+        background-color: #e1e1e1;
+    }
+
+    .title {
+        display: block;
+        margin: 0;
+        margin-top: 1rem;
+    }
+
+    input {
+        margin: 0 5px 4px 0;
+        width: 88%;
+        min-height: 2em;
+        border: 1px solid rgb(69, 69, 69);
+    }
+
+    .btn-1 {
+        padding: 0.4rem;
+        min-width: 60px;
+        width: 8%;
+        background-color: green;
+        color: white;
+        border-radius: 10%;
+    }
+
+    .list-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    ul {
+        list-style: none;
+        padding-left: 0;
+        font-size: 0.8em;
+    }
+
+    table {
+        width: 100%;
+        font-size: 0.8em;
+        text-align: left;
+    }
+
+    .trash {
+        width: 0.8rem;
+        height: 0.8rem;
+        margin: 0 10px;
+    }
+
+    label [type="checkbox"] {
+        width: unset;
+        margin: 0 10px;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .container-taskList {
+        max-width: 70%;
+    }
+
+    .btn-2 {
+        padding: 0;
+        margin: 0;
+        border: none;
+        cursor: pointer;
+    }
+
+    .taskColor {
+        color: rgb(69, 69, 69);
+        text-decoration: line-through;
+    }
+</style>
+
+<body>
+    <div class="containerPrincipal">
+        <h1>Todo List</h1>
+        <p>Nicole Villarreal</p>
+        <hr />
+        <div class="newTask">
+            <p class="title">Nueva Tarea</p>
+            <input id="newTask" maxlength="70" type="text" autofocus placeholder="Escribe tu tarea aquí..." />
+            <button id="aggTask" class="btn-1">Aregar</button>
+        </div>
+        <div class="list-container">
+            <div class="statistics">
+                <ul id="statistics"></ul>
+                <ul id="statistics1"></ul>
+            </div>
+            <div class="container-taskList">
+                <table id="tableList">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tarea</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const taskList = document.querySelector("#tableList");
+        const taskInput = document.querySelector("#newTask");
+        const btnAggTask = document.querySelector("#aggTask")
+        const statistics = document.querySelector("#statistics");
+        const statistics1 = document.querySelector("#statistics1");
+
+        let idCounter = 3;
+
+        const tasks = [
+            {
+                id: Date.now(),
+                description: "Despertar",
+                ID: 16,
+                completed: false,
+            },
+            {
+                id: Date.now(),
+                description: "Bañarse",
+                ID: 60,
+                completed: false,
+            },
+            {
+                id: Date.now(),
+                description: "Irse a trabajar",
+                ID: 24,
+                completed: true,
+            }
+        ];
+
+
+        function renderList() {
+            let html = "";
+            tasks.forEach(function (task) {
+                html += ` 
+            <tr>
+                <td>
+                    <p>${task.ID}</p>
+                </td>
+                <td>
+                    <p ${task.completed
+                        ? 'class="taskColor"'
+                        : ''}>${task.description}</p>
+                </td>
+                <td>
+                    <label for="checkbox${task.ID}">
+                        <input type="checkbox" id="${task.ID}" ${task.completed ? 'checked' : ''}>
+                    </label>
+                </td>
+                <td>
+                    <button class="btn-2" onclick="deletes(${task.id})"><img class="trash" src="x.png" alt="x roja"> </button>
+                </td>
+            </tr>`;
+            });
+            taskList.innerHTML = html;
+
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener("change", function () {
+                    const taskId = parseInt(this.id);
+                    const index = tasks.findIndex(task => task.ID === taskId);
+                    updateTaskStatus(index);
+                    renderList();
+                });
+            });
+
+            updateStacts();
+            concatenateCompletedTasks(tasks);
+        }
+
+
+        let updateStacts = () => {
+            statistics.innerHTML = `
+    <li class="total">Total tareas: <strong>${tasks.length}</strong></li>
+    `;
+        }
+
+
+        function deletes(id) {
+            const index = tasks.findIndex((ele) => ele.id == id);
+            tasks.splice(index, 1);
+            renderList(tasks);
+        }
+
+        function updateTaskStatus(index) {
+            tasks[index].completed = !tasks[index].completed;
+        }
+
+        function countCompletedTasks(tasks) {
+            const completedTasks = tasks.filter(task => task.completed === true);
+            return completedTasks.length;
+        }
+
+        function concatenateCompletedTasks(tasks) {
+            const completedCount = countCompletedTasks(tasks);
+            statistics1.innerHTML = `
+    <li class="total">Total tareas realizadas: <strong>${completedCount}</strong></li>
+    `;
+        }
+
+
+        btnAggTask.addEventListener("click", () => {
+            const taskName = taskInput.value;
+            idCounter++;
+
+            if (taskName) {
+                tasks.push({ id: Date.now(), description: taskName, ID: idCounter, completed: false })
+
+                taskInput.value = ""
+
+                renderList();
+            }
+        });
+
+        renderList(); 
+    </script>
+</body>
+
+</html>
